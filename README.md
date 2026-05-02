@@ -1,2 +1,481 @@
-# verbal
-verbal quiz
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verbal Aptitude Quiz</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #password-prompt {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        #password-prompt h2 {
+            margin-top: 0;
+            color: #2d3748;
+        }
+        #password-input {
+            width: 80%;
+            padding: 12px;
+            font-size: 1em;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        #password-submit-btn {
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #password-submit-btn:hover {
+             background-color: #2b6cb0;
+        }
+        #error-message {
+            color: #e53e3e;
+            font-weight: bold;
+            margin-top: 15px;
+            display: none; /* Hidden by default */
+        }
+
+        #quiz-wrapper {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            display: none; /* Quiz is hidden by default until password is entered */
+        }
+
+        #quiz-header {
+            background-color: #4a5568;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #quiz-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        #timer {
+            font-size: 1.2em;
+            font-weight: bold;
+            background-color: #2d3748;
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+
+        #quiz-container, #result-container {
+            padding: 30px;
+        }
+
+        .question {
+            display: none;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+        
+        .passage {
+            font-style: italic;
+            background-color: #f9f9f9;
+            border-left: 3px solid #ccc;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-weight: normal;
+        }
+
+        .options div {
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .options label {
+            cursor: pointer;
+            display: block;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        
+        .options label:hover {
+            background-color: #edf2f7;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        #navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 30px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        #navigation button {
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #navigation button:hover {
+            background-color: #2b6cb0;
+        }
+        
+        #navigation button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        /* Results Styling */
+        #result-container h2 {
+            text-align: center;
+            color: #2d3748;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        
+        .review-question {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .review-question p {
+            font-weight: bold;
+        }
+
+        .user-answer.correct {
+            color: #38a169;
+            font-weight: bold;
+        }
+
+        .user-answer.incorrect {
+            color: #e53e3e;
+            font-weight: bold;
+            text-decoration: line-through;
+        }
+
+        .correct-answer {
+            color: #38a169;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Password Prompt Screen -->
+<div id="password-prompt">
+    <h2>Enter Password to Begin</h2>
+    <input type="password" id="password-input" placeholder="Password">
+    <br>
+    <button id="password-submit-btn">Start Quiz</button>
+    <p id="error-message">Incorrect password. Please try again.</p>
+</div>
+
+<!-- Main Quiz App (Hidden initially) -->
+<div id="quiz-wrapper">
+    <div id="quiz-header">
+        <h1>Verbal Aptitude Quiz</h1>
+        <div id="timer">30:00</div>
+    </div>
+
+    <div id="quiz-container">
+        <!-- Questions will be injected here by JavaScript -->
+    </div>
+
+    <div id="navigation">
+        <button id="back-btn">Back</button>
+        <button id="next-btn">Next</button>
+        <button id="submit-btn" style="display: none;">Submit Quiz</button>
+    </div>
+
+    <div id="result-container" style="display: none;">
+        <h2 id="score"></h2>
+        <div id="review"></div>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        // Analogies
+        { question: "1. JUBILATION : SORROW =", options: ["TRIUMPH : SUCCESS", "LAUGHTER : TEARS", "WEALTH : POVERTY", "ANGER : RAGE", "CALM : PEACE"], answer: "WEALTH : POVERTY" },
+        { question: "2. COMPOSER : SCORE =", options: ["AUTHOR : BOOK", "SCULPTOR : MUSEUM", "CONDUCTOR : ORCHESTRA", "PLAYWRIGHT : SCRIPT", "PAINTER : EASEL"], answer: "PLAYWRIGHT : SCRIPT" },
+        { question: "3. SPARK : WILDFIRE =", options: ["SNOWFLAKE : BLIZZARD", "DROPLET : OCEAN", "PEBBLE : MOUNTAIN", "IDEA : INNOVATION", "WIND : HURRICANE"], answer: "SNOWFLAKE : BLIZZARD" },
+        { question: "4. MICROSCOPE : MINUTE =", options: ["STETHOSCOPE : HEALTH", "BINOCULARS : FAR", "SCALE : HEAVY", "PROTRACTOR : ANGLE", "RULER : WIDE"], answer: "BINOCULARS : FAR" },
+        { question: "5. SCENE : PLAY =", options: ["SENTENCE : PARAGRAPH", "VERSE : POEM", "PHOTO : ALBUM", "INGREDIENT : RECIPE", "NOTE : SYMPHONY"], answer: "VERSE : POEM" },
+        { question: "6. CAKE : WHEAT =", options: ["WINE : GRAPES", "BREAD : YEAST", "JUICE : WATER", "OMELETTE : PAN", "SALAD : LETTUCE"], answer: "WINE : GRAPES" },
+        { question: "7. HAMMER : BUILD =", options: ["WRENCH : TURN", "SCALPEL : OPERATE", "SHOVEL : DIG", "SCISSORS : CUT", "PAINTBRUSH : COLOR"], answer: "SCALPEL : OPERATE" },
+        { question: "8. JOG : SPRINT =", options: ["WALK : RUN", "TOUCH : HOLD", "GLANCE : STARE", "DRINK : SIP", "SPEAK : SHOUT"], answer: "GLANCE : STARE" },
+        { question: "9. GREEN : COLOR =", options: ["SQUARE : SHAPE", "LOUD : SOUND", "SWEET : TASTE", "TALL : HEIGHT", "COLD : TEMPERATURE"], answer: "SQUARE : SHAPE" },
+        { question: "10. REFLECTION : LIGHT =", options: ["SHADOW : OBJECT", "RIPPLE : WATER", "ECHO : SOUND", "IMAGE : LENS", "HEAT : FIRE"], answer: "ECHO : SOUND" },
+        
+        // Logical Deduction
+        { question: "11. To qualify for the national debate team, a student must win a regional tournament. Sarah did not win the regional tournament. What is the best conclusion?", passage: "", options: ["Sarah is not good at debating.", "Sarah cannot qualify for the national team.", "Sarah should try a different activity.", "The regional tournament was very difficult.", "Sarah can appeal the decision."], answer: "Sarah cannot qualify for the national team." },
+        { question: "12. All reptiles are cold-blooded. Lizards are reptiles. Which conclusion is correct?", passage: "", options: ["All cold-blooded animals are lizards.", "Lizards have scales.", "Lizards are cold-blooded.", "Some reptiles are not lizards.", "All reptiles are lizards."], answer: "Lizards are cold-blooded." },
+        { question: "13. If the power is out, the school will be closed. The school was not closed today. What can be concluded?", passage: "", options: ["The power was out for a short time.", "It was a holiday.", "The power was not out.", "The students stayed home.", "The school has a generator."], answer: "The power was not out." },
+        { question: "14. Only senior managers are eligible for a company car. David is a junior employee at the company. David has worked there for ten years. What can be concluded?", passage: "", options: ["David is not eligible for a company car.", "David does not need a company car.", "All senior managers have a company car.", "David will soon be a senior manager.", "The company has many cars."], answer: "David is not eligible for a company car." },
+        { question: "15. Some journalists are avid readers. All avid readers enjoy fiction. Which conclusion is most logical?", passage: "", options: ["All journalists enjoy fiction.", "Some journalists enjoy fiction.", "No journalists are avid readers.", "All avid readers are journalists.", "Only journalists enjoy fiction."], answer: "Some journalists enjoy fiction." },
+        { question: "16. All projects in the art gallery were created by art students. Some of the sculptures were created by art students. All projects in the gallery were judged by a famous critic.", passage: "", options: ["The famous critic judged some sculptures.", "All art students create sculptures.", "The art gallery only displays sculptures.", "The famous critic is an art student.", "Only sculptures were in the gallery."], answer: "The famous critic judged some sculptures." },
+        { question: "17. A team receives a trophy for winning the championship. The Tigers are a team in the league, and they received a trophy.", passage: "", options: ["The Tigers are the best team.", "All teams received trophies.", "The Tigers likely won the championship.", "The trophy is made of gold.", "The Tigers will win next year."], answer: "The Tigers likely won the championship." },
+        { question: "18. Using an air conditioner cools the air in a room. A physicist explains that an air conditioner actually works by moving heat from inside the room to the outside.", passage: "", options: ["The air conditioner is broken.", "The physicist is incorrect.", "The room does not feel cooler.", "The air conditioner does not create 'cold', it removes heat.", "Air conditioners are inefficient."], answer: "The air conditioner does not create 'cold', it removes heat." },
+        { question: "19. Organic food is grown without synthetic pesticides. However, producing organic food often requires more land and water than conventional farming.", passage: "", options: ["Organic food is healthier.", "Conventional farming is bad for the environment.", "Organic food has trade-offs in its environmental impact.", "Synthetic pesticides are necessary.", "Organic food is always more expensive."], answer: "Organic food has trade-offs in its environmental impact." },
+        { question: "20. Exercise is vital for physical health. However, over-exercising can lead to injuries and burnout.", passage: "", options: ["People should not exercise.", "All exercise causes injuries.", "Moderation is key to a healthy exercise regimen.", "Only professional athletes get injured.", "Burnout is a mental condition."], answer: "Moderation is key to a healthy exercise regimen." },
+
+        // Analytical Reasoning
+        { question: "21. There are five runners: A, B, C, D, E. A finished after B but before C. E finished before B. D was the last to finish. Who finished first?", passage: "", options: ["A", "B", "C", "D", "E"], answer: "E" },
+        { question: "22. In a zoo, various animals are housed based on their needs. Carnivores are given meat, herbivores get plants, and omnivores get a mix. Bears are omnivores. Lions are carnivores. Deer are herbivores. A zookeeper is preparing a meal of plants and meat. Which animal is it most likely for?", passage: "", options: ["Lion", "Deer", "A new animal", "Bear", "Lion and Deer together"], answer: "Bear" },
+        { question: "23. Four friends discuss their favorite subjects. Alex prefers Science over Math. Beth likes English more than History. Chloe's favorite is Math. If Alex and Chloe are in a study group, which two subjects are most likely their focus?", passage: "", options: ["English and History", "Science and Math", "Science and English", "Math and History", "Science and History"], answer: "Science and Math" },
+        { question: "24. Five movies (P, Q, R, S, T) are ranked by box office sales. P earned more than Q but less than R. S earned more than T, but less than Q. Which movie had the highest sales?", passage: "", options: ["P", "Q", "R", "S", "T"], answer: "R" },
+        { question: "25. Five products (V, W, X, Y, Z) are rated by quality. Z is the highest rated. W is rated lower than X. V is rated higher than Y but lower than W. Which product has the lowest rating?", passage: "", options: ["V", "W", "X", "Y", "Z"], answer: "Y" },
+        { question: "26. In a race, Tom finished ahead of Sam. Ben finished after Sam but before Dave. Mike was the first to finish. Who finished last?", passage: "", options: ["Tom", "Sam", "Ben", "Dave", "Mike"], answer: "Dave" },
+        { question: "27. Three people (Leo, Mia, Noah) choose a pet (Cat, Dog, Fish) and a home (City, Suburbs). Leo lives in the City and dislikes Dogs. Mia chose a Fish. Noah lives in the Suburbs. Which is a possible choice for Leo?", passage: "", options: ["Dog - City", "Cat - Suburbs", "Fish - Suburbs", "Cat - City", "Dog - Suburbs"], answer: "Cat - City" },
+        { question: "28. Five colleagues (P, Q, R, S, T) are seated in a row. P is at one end. Q is seated next to R. S is to the immediate left of T. R is in the center seat. Which is a possible seating arrangement from left to right?", passage: "", options: ["P, S, T, R, Q", "S, T, R, Q, P", "T, S, R, Q, P", "P, Q, R, S, T", "Q, R, S, T, P"], answer: "S, T, R, Q, P" },
+        { question: "29. A building has four floors. The IT department is on a floor above the HR department. The Sales department is on the first floor. The HR department is not on the second floor. Where is the IT department?", passage: "", options: ["First Floor", "Second Floor", "Third Floor", "Fourth Floor", "Cannot be determined"], answer: "Fourth Floor" },
+        { question: "30. Five companies (A, B, C, D, E) are located on five different floors of a building (1-5). Company A is on the top floor. Company B is on a floor directly below C. Company D is on a floor directly above E. Company C is on floor 3. Which floor is Company B on?", passage: "", options: ["Floor 1", "Floor 2", "Floor 3", "Floor 4", "Floor 5"], answer: "Floor 2" },
+
+        // Reading Comprehension
+        { question: "31. Identify the theme of the text.", passage: "The gig economy, characterized by short-term contracts and freelance work, offers unprecedented flexibility. Workers can choose their hours and projects, often working from anywhere. However, this freedom comes at the cost of job security, benefits like health insurance, and a consistent income, creating a new set of economic challenges for a growing portion of the workforce.", options: ["The benefits of freelance work", "The history of the gig economy", "The trade-offs of the gig economy lifestyle", "How to find a freelance job", "The future of office work"], answer: "The trade-offs of the gig economy lifestyle" },
+        { question: "32. Identify the main idea of the paragraph.", passage: "Blockchain is a decentralized, distributed ledger technology that records transactions across many computers. This structure ensures that no single entity can alter the records, making it highly secure and transparent. While initially created for cryptocurrencies like Bitcoin, its potential applications are now being explored in supply chain management, voting systems, and digital identity.", options: ["The history of Bitcoin", "The secure and transparent nature of blockchain technology", "How to invest in cryptocurrency", "The disadvantages of blockchain", "The future of finance"], answer: "The secure and transparent nature of blockchain technology" },
+        { question: "33. Identify the main idea of the paragraph.", passage: "Regular physical exercise provides numerous health benefits beyond weight management. It strengthens the cardiovascular system, reducing the risk of heart disease, and improves mental health by releasing endorphins, which can alleviate symptoms of depression and anxiety. Consistent activity also boosts the immune system, making the body more resilient to illnesses.", options: ["Exercise for weight loss", "The psychological effects of endorphins", "How to start an exercise routine", "The comprehensive health benefits of regular exercise", "The link between exercise and the immune system"], answer: "The comprehensive health benefits of regular exercise" },
+        { question: "34. Identify the main idea of the paragraph.", passage: "Volcanoes are formed when magma from within the Earth's upper mantle works its way to the surface. At the surface, it erupts to form lava flows and ash deposits. Over time, as the volcano continues to erupt, it will get bigger and bigger. The violent shaking of the ground and the destructive power of lava flows make active volcanoes a significant natural hazard for nearby communities.", options: ["The composition of lava", "The dangers of living near a volcano", "The process of volcanic formation and its associated risks", "How to predict volcanic eruptions", "The difference between magma and lava"], answer: "The process of volcanic formation and its associated risks" },
+        { question: "35. Identify the theme of the text.", passage: "Vertical farming is an innovative agricultural method where crops are grown in vertically stacked layers, often indoors. This approach uses less land and water compared to traditional farming and allows for year-round cultivation in controlled environments. By bringing food production into urban centers, it can reduce transportation costs and carbon emissions, promoting local and sustainable food systems.", options: ["The high cost of technology", "The challenges of urban life", "The history of agriculture", "Sustainable agriculture through vertical farming", "The economics of food transportation"], answer: "Sustainable agriculture through vertical farming" },
+        { question: "36. Identify the main idea of the paragraph.", passage: "Artificial intelligence (AI) is rapidly evolving, with machine learning algorithms now capable of tasks that once required human intelligence, such as recognizing speech and driving cars. As AI becomes more integrated into our lives, it raises important ethical questions about privacy, job displacement, and algorithmic bias. Addressing these challenges is crucial for ensuring that AI development benefits society as a whole.", options: ["How self-driving cars work", "The history of artificial intelligence", "The dual nature of AI: its capabilities and ethical challenges", "The problem of job displacement", "The future of machine learning"], answer: "The dual nature of AI: its capabilities and ethical challenges" },
+        { question: "37. Identify the theme of the text.", passage: "Mindfulness is the practice of paying attention to the present moment without judgment. Techniques such as meditation and deep breathing help individuals develop a greater awareness of their thoughts and feelings. Studies have shown that regular mindfulness practice can reduce stress, improve focus, and enhance emotional regulation, making it a valuable tool for mental well-being.", options: ["The history of meditation", "The role of breathing in relaxation", "The benefits of mindfulness for mental health", "The causes of stress and anxiety", "How to improve focus"], answer: "The benefits of mindfulness for mental health" },
+        { question: "38. Identify the main idea of the paragraph.", passage: "The concept of a circular economy aims to eliminate waste and promote the continual use of resources. Unlike the traditional linear model of 'take, make, dispose,' a circular system emphasizes reusing, repairing, and recycling materials to create a closed loop. This approach not only reduces pollution and environmental degradation but also presents new opportunities for economic innovation and sustainability.", options: ["The problem with landfills", "The importance of recycling", "The circular economy as a sustainable alternative to the linear model", "How to repair consumer goods", "The high cost of manufacturing"], answer: "The circular economy as a sustainable alternative to the linear model" },
+        { question: "39. Identify the theme of the text.", passage: "Coral reefs, often called the 'rainforests of the sea,' are incredibly diverse ecosystems that support a quarter of all marine species. They also protect coastlines from storms and provide economic benefits through tourism and fishing. However, climate change, leading to warmer ocean temperatures and acidification, is causing widespread coral bleaching and threatening the survival of these vital habitats.", options: ["The business of tourism", "The diversity of marine life", "The critical importance of coral reefs and the threats they face", "The effects of ocean acidification", "How to prevent coastal erosion"], answer: "The critical importance of coral reefs and the threats they face" },
+        { question: "40. Identify the main idea of the paragraph.", passage: "Effective communication involves more than just exchanging information; it is about understanding the emotion and intentions behind the information. As well as being able to clearly convey a message, you need to also listen in a way that gains the full meaning of what's being said. This combination of speaking and active listening is the foundation of successful personal and professional relationships.", options: ["The importance of public speaking", "How to be a better listener", "The definition of effective communication", "The role of communication in building strong relationships", "The causes of miscommunication"], answer: "The role of communication in building strong relationships" }
+    ];
+
+    const passwordPrompt = document.getElementById('password-prompt');
+    const passwordInput = document.getElementById('password-input');
+    const passwordSubmitBtn = document.getElementById('password-submit-btn');
+    const errorMessage = document.getElementById('error-message');
+    const quizWrapper = document.getElementById('quiz-wrapper');
+    
+    const quizContainer = document.getElementById('quiz-container');
+    const resultContainer = document.getElementById('result-container');
+    const backBtn = document.getElementById('back-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const timerEl = document.getElementById('timer');
+
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+    let timerInterval;
+
+    function buildQuiz() {
+        quizData.forEach((data, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question';
+            questionDiv.id = `q${index}`;
+
+            const questionText = document.createElement('p');
+            questionText.className = 'question-text';
+            questionText.innerHTML = data.question;
+
+            if (data.passage) {
+                const passageEl = document.createElement('div');
+                passageEl.className = 'passage';
+                passageEl.textContent = data.passage;
+                questionDiv.appendChild(passageEl);
+            }
+            
+            questionDiv.appendChild(questionText);
+
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options';
+
+            data.options.forEach(option => {
+                const optionWrapper = document.createElement('div');
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = `q${index}`;
+                radio.value = option;
+                const uniqueId = `q${index}_${option.replace(/[^a-zA-Z0-9]/g, '')}`;
+                radio.id = uniqueId;
+                
+                const label = document.createElement('label');
+                label.htmlFor = uniqueId;
+                label.textContent = option;
+                
+                optionWrapper.appendChild(radio);
+                optionWrapper.appendChild(label);
+                optionsDiv.appendChild(optionWrapper);
+
+                radio.addEventListener('change', () => {
+                    userAnswers[index] = radio.value;
+                });
+            });
+
+            questionDiv.appendChild(optionsDiv);
+            quizContainer.appendChild(questionDiv);
+        });
+    }
+
+    function showQuestion(index) {
+        document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+        document.getElementById(`q${index}`).classList.add('active');
+
+        backBtn.disabled = index === 0;
+        nextBtn.style.display = index === quizData.length - 1 ? 'none' : 'inline-block';
+        submitBtn.style.display = index === quizData.length - 1 ? 'inline-block' : 'none';
+    }
+
+    function navigate(direction) {
+        currentQuestionIndex += direction;
+        showQuestion(currentQuestionIndex);
+    }
+    
+    function startTimer(duration) {
+        let timer = duration;
+        let minutes, seconds;
+
+        timerInterval = setInterval(() => {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            timerEl.textContent = minutes + ":" + seconds;
+
+            if (--timer < 0) {
+                clearInterval(timerInterval);
+                submitQuiz();
+            }
+        }, 1000);
+    }
+
+    function submitQuiz() {
+        // Stop the timer
+        clearInterval(timerInterval);
+
+        // Calculate Score
+        let score = 0;
+        quizData.forEach((data, index) => {
+            if (userAnswers[index] === data.answer) {
+                score++;
+            }
+        });
+
+        // Hide quiz UI and show results UI
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('navigation').style.display = 'none';
+        document.getElementById('quiz-header').style.textAlign = 'center';
+        timerEl.textContent = "Time's Up!";
+        
+        resultContainer.style.display = 'block';
+        document.getElementById('score').textContent = `Your Score: ${score} / ${quizData.length}`;
+
+        // Build Review Section
+        const reviewContainer = document.getElementById('review');
+        reviewContainer.innerHTML = '<h3>Review Your Answers</h3>';
+        quizData.forEach((data, index) => {
+            const reviewDiv = document.createElement('div');
+            reviewDiv.className = 'review-question';
+
+            reviewDiv.innerHTML = `<p>${data.question}</p>`;
+            
+            const userAnswer = userAnswers[index] || "No answer";
+            const isCorrect = userAnswer === data.answer;
+            
+            const userAnswerEl = document.createElement('div');
+            userAnswerEl.innerHTML = `Your answer: <span class="user-answer ${isCorrect ? 'correct' : 'incorrect'}">${userAnswer}</span>`;
+            reviewDiv.appendChild(userAnswerEl);
+            
+            if (!isCorrect) {
+                const correctAnswerEl = document.createElement('div');
+                correctAnswerEl.innerHTML = `Correct answer: <span class="correct-answer">${data.answer}</span>`;
+                reviewDiv.appendChild(correctAnswerEl);
+            }
+            
+            reviewContainer.appendChild(reviewDiv);
+        });
+    }
+
+    // --- Password Authentication ---
+    function checkPassword() {
+        const password = passwordInput.value;
+        if (password === "Mula!") {
+            // Correct password: Hide prompt, show quiz, start everything
+            passwordPrompt.style.display = "none";
+            quizWrapper.style.display = "block";
+            
+            buildQuiz();
+            showQuestion(currentQuestionIndex);
+            
+            // Start 30 Minute Timer (30 * 60 seconds)
+            const thirtyMinutes = 60 * 30;
+            startTimer(thirtyMinutes);
+        } else {
+            // Incorrect password
+            errorMessage.style.display = "block";
+        }
+    }
+
+    // Trigger password check on button click
+    passwordSubmitBtn.addEventListener('click', checkPassword);
+
+    // Trigger password check on "Enter" key press
+    passwordInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkPassword();
+        }
+    });
+
+    // --- Quiz Navigation Listeners ---
+    backBtn.addEventListener('click', () => navigate(-1));
+    nextBtn.addEventListener('click', () => navigate(1));
+    submitBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to submit the quiz?')) {
+            submitQuiz();
+        }
+    });
+
+</script>
+
+</body>
+</html>
